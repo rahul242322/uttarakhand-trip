@@ -140,6 +140,15 @@ svg#map:active { cursor: grabbing; }
 .snowtag.s3 { background: var(--indigo); color: var(--bg); }
 .grp { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; color: var(--muted); font-weight: 500; }
 .grp .seg button { padding: 6px 14px; }
+.zoom button { display: grid; place-items: center; }
+.zoom button.on { background: #2a5bd7; border-color: #7aa2ff; }
+.me { position: absolute; left: 12px; top: 12px; z-index: 3; max-width: calc(100% - 72px); display: flex; align-items: center; gap: 8px; background: rgba(10,18,48,.94); color: #fff; border: 1px solid #3a4a85; border-radius: 12px; padding: 6px 8px 6px 10px; font-size: 12px; line-height: 1.35; }
+.me[hidden] { display: none; }
+.me b { font-weight: 600; }
+.me small { color: #9db0ee; }
+.me button { all: unset; cursor: pointer; color: #9db0ee; font-weight: 600; padding: 3px 8px; border: 1px solid #3a4a85; border-radius: 8px; }
+.me button:focus-visible { outline: 2px solid #7aa2ff; }
+.me i { width: 8px; height: 8px; border-radius: 50%; background: #4285f4; box-shadow: 0 0 0 3px rgba(66,133,244,.35); flex: none; }
 .cap { display: none; position: absolute; left: 8px; right: 56px; bottom: 8px; z-index: 3; background: rgba(10,18,48,.94); color: #fff; border: 1px solid #3a4a85; border-radius: 12px; padding: 8px 12px; font-size: 13px; line-height: 1.35; cursor: pointer; }
 .cap b { font-family: var(--font-display); font-size: 15px; }
 .cap small { display: block; margin-top: 2px; color: #9db0ee; font-size: 11px; }
@@ -203,12 +212,14 @@ svg#map .pulse { transform-box: fill-box; transform-origin: center; animation: p
             <button id="zin" aria-label="Zoom in">+</button>
             <button id="zout" aria-label="Zoom out">&minus;</button>
             <button id="zreset" aria-label="Show whole route" style="font-size:12px">All</button>
+            <button id="locate" aria-label="Show my live location" title="Show my live location"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
           </div>
+          <div class="me" id="mestat" aria-live="polite" hidden></div>
           <div class="cap" id="cap" hidden></div>
           <div class="legend"><span><i style="background:#ff9a4d"></i>Overnight stop</span><span><i style="background:#fff;border:2px solid #ff9a4d"></i>Visit</span></div>
         </div>
         <div class="card" id="card" aria-live="polite"></div>
-        <p class="note">Schematic map. The state outline is approximate and routes are smoothed lines between stops, so use a navigation app for the real roads.</p>
+        <p class="note">Schematic map. The state outline is approximate and routes are smoothed lines between stops, so use a navigation app for the real roads. Tap the target button on the map to show your live location. Only you see it.</p>
       </div>
       <div class="days" id="days"></div>
     </div>
@@ -392,7 +403,7 @@ svg#map .pulse { transform-box: fill-box; transform-origin: center; animation: p
     return '<path d="' + d + '" stroke="#bfe6ff" stroke-width="' + (1.6 * k) + '" stroke-linecap="round" fill="none"/>';
   }
 
-  var state = { plan: '11', day: -1, vb: null, extras: false, place: null, n: 4 };
+  var state = { plan: '11', day: -1, vb: null, extras: false, place: null, n: 4, me: null, follow: false };
   var svg = document.getElementById('map');
   var card = document.getElementById('card');
   var cap = document.getElementById('cap');
@@ -503,6 +514,12 @@ svg#map .pulse { transform-box: fill-box; transform-origin: center; animation: p
         flake(p, k, id) + ((!narrow || night || isOn || id === 'delhi') ? pill(p[0] + (narrow && c.lab2 ? c.lab2 : c.lab)[1] * k, p[1] + (narrow && c.lab2 ? c.lab2 : c.lab)[2] * k, c.n, (narrow && c.lab2 ? c.lab2 : c.lab)[0], 12 * k, k, false) : '') + '</g>';
     });
 
+    if (state.me) {
+      var mx = px(state.me.lon), my = py(state.me.lat), ar = Math.max(state.me.acc * KY / 111320, 10 * k);
+      o += '<circle cx="' + mx.toFixed(1) + '" cy="' + my.toFixed(1) + '" r="' + ar.toFixed(1) + '" fill="rgba(66,133,244,.18)" stroke="rgba(66,133,244,.55)" stroke-width="' + k + '"/>' +
+        '<circle class="pulse" cx="' + mx.toFixed(1) + '" cy="' + my.toFixed(1) + '" r="' + (8 * k) + '" fill="#4285f4"/>' +
+        '<circle cx="' + mx.toFixed(1) + '" cy="' + my.toFixed(1) + '" r="' + (7 * k) + '" fill="#4285f4" stroke="#fff" stroke-width="' + (2.5 * k) + '"/>';
+    }
     svg.setAttribute('viewBox', vb.x.toFixed(1) + ' ' + vb.y.toFixed(1) + ' ' + vb.w.toFixed(1) + ' ' + h.toFixed(1));
     svg.innerHTML = o;
   }
@@ -599,12 +616,74 @@ svg#map .pulse { transform-box: fill-box; transform-origin: center; animation: p
   document.getElementById('zout').onclick = function () { zoom(1.5); };
   document.getElementById('zreset').onclick = function () { state.day = -1; state.place = null; overview(); render(); };
 
+  /* ---------- Live location (browser GPS, shown only on this device) ---------- */
+  var watchId = null, lastDraw = 0, locBtn = document.getElementById('locate'), meBox = document.getElementById('mestat');
+  function kmBetween(a, b) {
+    var R = 6371, dLat = (b[0] - a[0]) * Math.PI / 180, dLon = (b[1] - a[1]) * Math.PI / 180;
+    var x = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(a[0] * Math.PI / 180) * Math.cos(b[0] * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return 2 * R * Math.asin(Math.sqrt(x));
+  }
+  function nearestStop(lat, lon) {
+    var best = null;
+    Object.keys(P).forEach(function (id) {
+      var d = kmBetween([lat, lon], P[id].ll);
+      if (!best || d < best.d) best = { id: id, d: d };
+    });
+    return best;
+  }
+  function showMe(html, withStop) {
+    meBox.hidden = false;
+    meBox.innerHTML = '<i></i><span>' + html + '</span><button type="button" id="mestop">' + (withStop ? 'Stop' : 'Close') + '</button>';
+    document.getElementById('mestop').onclick = stopLocate;
+  }
+  function stopLocate() {
+    if (watchId !== null && navigator.geolocation) navigator.geolocation.clearWatch(watchId);
+    watchId = null; state.me = null; meBox.hidden = true; locBtn.classList.remove('on');
+    drawMap();
+  }
+  function onFix(pos) {
+    var c = pos.coords, now = Date.now(), first = !state.me;
+    state.me = { lat: c.latitude, lon: c.longitude, acc: c.accuracy || 50 };
+    var n = nearestStop(c.latitude, c.longitude), far = n.d > 400;
+    var where = far ? '<b>' + Math.round(n.d) + ' km</b> from ' + P[n.id].n + ' (outside this map)'
+      : (n.d < 3 ? 'At <b>' + P[n.id].n + '</b>' : '<b>' + (n.d < 10 ? n.d.toFixed(1) : Math.round(n.d)) + ' km</b> from ' + P[n.id].n);
+    showMe(where + ' <small>&plusmn;' + Math.round(state.me.acc) + ' m</small>', true);
+    if (!far && state.follow) {
+      var w = first ? Math.min(state.vb.w, 260) : state.vb.w, hh = w / ratio();
+      state.vb = { x: px(c.longitude) - w / 2, y: py(c.latitude) - hh / 2, w: w };
+    }
+    if (first || now - lastDraw > 1500) { lastDraw = now; drawMap(); }
+  }
+  function onLocErr(e) {
+    if (e && e.code === 1) {
+      stopLocate();
+      showMe('Location is blocked. Allow location for this site in your browser settings. It does not work inside the Claude preview, so open the GitHub link instead.', false);
+    } else {
+      showMe('Waiting for a GPS signal. Keep this page open and move to open sky.', true);
+    }
+  }
+  locBtn.addEventListener('click', function () {
+    if (watchId !== null) {
+      state.follow = true;
+      if (state.me) { var w = state.vb.w, hh = w / ratio(); state.vb = { x: px(state.me.lon) - w / 2, y: py(state.me.lat) - hh / 2, w: w }; drawMap(); }
+      return;
+    }
+    if (!navigator.geolocation || (window.isSecureContext === false)) {
+      showMe('Live location needs a secure (https) page and a browser with GPS support.', false);
+      return;
+    }
+    state.follow = true;
+    locBtn.classList.add('on');
+    showMe('Finding your location&hellip;', true);
+    watchId = navigator.geolocation.watchPosition(onFix, onLocErr, { enableHighAccuracy: true, maximumAge: 5000, timeout: 30000 });
+  });
+
   var drag = null;
   svg.addEventListener('pointerdown', function (e) { drag = { x: e.clientX, y: e.clientY, vx: state.vb.x, vy: state.vb.y, moved: false, target: e.target }; });
   svg.addEventListener('pointermove', function (e) {
     if (!drag) return;
     var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
-    if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true;
+    if (Math.abs(dx) + Math.abs(dy) > 4) { drag.moved = true; state.follow = false; }
     if (!drag.moved) return;
     var k = unitsPerPx();
     state.vb.x = drag.vx - dx * k; state.vb.y = drag.vy - dy * k;
