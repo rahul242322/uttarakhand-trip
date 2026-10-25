@@ -39,8 +39,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, .pin:focus-visible {
 .hero .inner { position: relative; z-index: 2; padding-block: 28px 64px; display: flex; flex-direction: column; gap: 16px; min-height: min(80vh, 720px); }
 .hero .hc { margin-top: auto; display: grid; gap: 16px; }
 .hbg { position: absolute; inset: 0; background: #0b2420; }
-.hs { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.6s ease; }
-.hs.on { opacity: 1; z-index: 2; animation: kb 16s ease-out forwards; }
+.hs { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.1s ease; }
+.hs.on { opacity: 1; z-index: 2; animation: kb 9s ease-out forwards; }
 .hs.prev { opacity: 1; z-index: 1; }
 @keyframes kb { from { transform: scale(1); } to { transform: scale(1.08); } }
 .hcap { position: absolute; z-index: 3; right: max(16px, env(safe-area-inset-right, 0px)); bottom: 36px; display: flex; align-items: center; gap: 12px; color: #fff; font-size: 13px; font-weight: 600; text-shadow: 0 1px 6px rgba(0,0,0,.6); }
@@ -441,12 +441,13 @@ window.onerror = function (m, s, l) { document.documentElement.setAttribute('dat
       ensure(i, function () {
         var old = slides[cur];
         old.classList.remove('on'); old.classList.add('prev'); btns[cur].classList.remove('on');
-        setTimeout(function () { old.classList.remove('prev'); }, 1900);
+        setTimeout(function () { old.classList.remove('prev'); }, 1400);
         cur = i; slides[cur].classList.remove('prev'); slides[cur].classList.add('on'); btns[cur].classList.add('on'); nm.textContent = HERO[cur].n;
       });
     }
     loaded[0] = true; slides[0].classList.add('on'); btns[0].classList.add('on'); nm.textContent = HERO[0].n;
-    var timer = setInterval(function () { if (!document.hidden) show((cur + 1) % HERO.length); }, 6500);
+    var timer = setInterval(function () { if (!document.hidden) show((cur + 1) % HERO.length); }, 4000);
+    window.addEventListener('load', function () { HERO.forEach(function (h, i) { setTimeout(function () { ensure(i, function () {}); }, 300 * i); }); });
     dots.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { clearInterval(timer); show(+b.getAttribute('data-i')); } });
     var s = 11, snow = '';
     function r() { s = (s * 9301 + 49297) % 233280; return s / 233280; }
