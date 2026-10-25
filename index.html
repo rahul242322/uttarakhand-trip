@@ -227,6 +227,24 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(38px, 
 .pc .dayc { font-size: 11px; font-weight: 600; background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 2px 9px; }
 .pc .go2 { justify-self: start; margin-top: 4px; font: 600 13px var(--font-body); color: var(--accent); background: none; border: 1px solid var(--accent); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
 .pc .go2:hover { background: var(--accent); color: #fff; }
+.sgrid { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 760px) { .sgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .sgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.sc { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 18px; display: grid; gap: 12px; align-content: start; }
+.sc header { display: grid; gap: 6px; }
+.sc h3 { font-family: var(--font-display); font-size: 22px; margin: 0; line-height: 1.15; }
+.sc .nts { display: flex; flex-wrap: wrap; gap: 6px; }
+.sc .nts span { font-size: 11px; font-weight: 600; background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 2px 9px; }
+.sc h4 { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px; font-weight: 600; }
+.sc p { margin: 0; font-size: 14px; }
+.sc ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; }
+.sc li { padding-left: 14px; position: relative; }
+.sc li::before { content: ""; position: absolute; left: 0; top: 9px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.sc li small { color: var(--muted); }
+.sc .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+.sc .btns a { font: 600 13px var(--font-body); text-decoration: none; border-radius: 999px; padding: 7px 14px; border: 1px solid var(--accent); color: var(--accent); }
+.sc .btns a.pri { background: var(--accent); color: var(--bg); }
+.sc .btns a:hover { opacity: .85; }
 .tile.ph { width: 64px; height: 64px; padding: 0; background: var(--line); overflow: visible; }
 .tile.ph img { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; display: block; }
 @media (max-width: 520px) { .tile.ph { width: 56px; height: 56px; } }
@@ -262,7 +280,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(38px, 
   <div class="inner">
     <nav class="nav" aria-label="Sections">
       <b>Uttarakhand Winter Route</b>
-      <span class="links"><a href="#places">Places</a><a href="#plan">Itinerary</a><a href="#budget">Budget</a><a href="#snow">Snow</a></span>
+      <span class="links"><a href="#places">Places</a><a href="#plan">Itinerary</a><a href="#stay">Stay</a><a href="#budget">Budget</a><a href="#snow">Snow</a></span>
     </nav>
     <div class="hc">
     <div class="eyebrow">January &middot; Vasai Road and back</div>
@@ -305,6 +323,11 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(38px, 
       </div>
       <div class="days" id="days"></div>
     </div>
+
+    <section class="places" id="stay" aria-label="Where to stay">
+      <div class="sec"><span class="ey">Stays</span><h2>Where to stay</h2><p>Budget: rooms up to &#8377;1,500 a night. Prices and availability change by date, so treat the hotel names as leads to check, not confirmed deals. The buttons open a search already filtered to under &#8377;1,500.</p></div>
+      <div class="sgrid" id="sgrid"></div>
+    </section>
 
     <div class="more">
       <section>
@@ -457,7 +480,7 @@ window.onerror = function (m, s, l) { document.documentElement.setAttribute('dat
   /* Cover photo for each day card: [place, photo index] */
   var COVER = [null, ['delhi', 0], ['nainital', 0], ['kainchi', 0], ['jageshwar', 0], ['ranikhet', 1], ['haridwar', 0], ['rishikesh', 0], ['dhanaulti', 0], ['haridwar', 1], null];
   var BUD = [
-    ['Stays (8 nights, twin sharing)', 7, 12], ['Train tickets, both ways', 3.5, 6], ['Bus, Delhi to Nainital', 0.5, 1],
+    ['Stays (8 nights, rooms up to ₹1,500, twin sharing)', 4, 6], ['Train tickets, both ways', 3.5, 6], ['Bus, Delhi to Nainital', 0.5, 1],
     ['Cab or bus, Nainital to Haridwar', 'cab', 5, 7], ['Bike rental and fuel (2 per bike)', 3.5, 5.5], ['Food', 6, 9], ['Entry fees and extras', 1, 2]
   ];
 
@@ -663,6 +686,38 @@ window.onerror = function (m, s, l) { document.documentElement.setAttribute('dat
     });
     initCars(document.getElementById('pgrid'));
   }
+  /* Leads come from public listings of unknown dates. Prices are not confirmed. */
+  var STAYS = {
+    delhi: { q: 'Kashmere Gate, Delhi', maps: 'budget hotels near Kashmere Gate ISBT Delhi', area: 'Near Kashmere Gate or the New Delhi railway station area (Paharganj). Both are on the metro and close to the Kashmere Gate ISBT where tomorrow\'s bus leaves.',
+      leads: ['Hotel Green Castle <small>near the ISBT, Lothian Road</small>', 'Homestays and dorms near Kashmere Gate metro <small>often the cheapest option</small>'],
+      tips: ['One night only, so pick a place within a short metro ride of the ISBT.', 'Ask about early check-in, since your train arrives in the morning.'] },
+    nainital: { q: 'Nainital, Uttarakhand', maps: 'budget hotels near Mall Road Nainital', area: 'Mallital (north end of the lake, near Mall Road) is the most convenient. Tallital is quieter and a bit cheaper.',
+      leads: ['Hotel Sheela <small>on Mall Road, lake-facing</small>', 'Kapil\'s Inn <small>walking distance from Mall Road</small>', 'Hotel Shah Guest House <small>about 1 km from the lake</small>'],
+      tips: ['You stay here twice (Day 3 and Day 6), so ask about parking for the rented bike on Day 6.', 'Mall Road hotels often cost more than ₹1,500 in season. Try Tallital or a guesthouse a short walk up the hill.', 'Ask for a room with heating and hot water.'] },
+    almora: { q: 'Almora, Uttarakhand', maps: 'budget hotels Almora Kasar Devi', area: 'Almora town (Mall Road) is handy for food and shops. Kasar Devi, about 4 km out, has a quieter hill feel and cheaper hostels.',
+      leads: ['The Hosteller Kasar Devi <small>hostel, near Kasar Devi</small>', 'Kasar Jungle Resort <small>budget stay at Kasar Devi</small>', 'Kot Kailash Kumaon <small>listed with free parking</small>', 'Hotel Himsagar <small>lower tariffs, in town</small>'],
+      tips: ['Two nights here (Day 4 and 5), with the bike parked each night.', 'Kasar Devi roads are narrow and steep. Reach it before dark.', 'Some Kasar Devi places have no heating, so ask first.'] },
+    haridwar: { q: 'Haridwar, Uttarakhand', maps: 'budget hotels near Har Ki Pauri Haridwar', area: 'Near Har Ki Pauri or Bhimgoda is best for the evening aarti. Hotels by the railway station are cheaper but about 2 km away.',
+      leads: ['Hotel Ganesh Plaza <small>about 100 m from Har Ki Pauri, one listing from ₹1,400</small>', 'Hotel Divine <small>one listing from ₹1,344, near the bus stand</small>', 'Hotel Alpine <small>one listing from ₹1,500</small>'],
+      tips: ['You also return the bike near the station on Day 10, so a stay that is easy to reach by bike helps.', 'January nights are cold. Check for hot water.', 'Rooms by the ghats fill up on full-moon and festival days.'] },
+    mussoorie: { q: 'Mussoorie, Uttarakhand', maps: 'budget hotels near Library Chowk Mussoorie', area: 'Library Chowk end of Mall Road has the most budget hotels. Camel\'s Back Road is quieter. Landour is peaceful but pricier.',
+      leads: ['Himalaya Retreat Resort <small>one past listing at about ₹1,455</small>', 'FabHotel Sapphire <small>Camel\'s Back Road, near Mall Road</small>'],
+      tips: ['Two nights (Day 8 and 9), and your bike needs a parking spot.', 'Rates near Mall Road often pass ₹1,500, so look a little away from the centre.', 'Ask about heating and whether the hotel is reachable in snow.'] }
+  };
+  function drawStays() {
+    var nights = {};
+    DAYS.forEach(function (d, i) { if (d.stay) (nights[d.stay] = nights[d.stay] || []).push(i + 1); });
+    document.getElementById('sgrid').innerHTML = Object.keys(STAYS).map(function (id) {
+      var s = STAYS[id], nm = id === 'delhi' ? 'Delhi' : P[id].n;
+      var bk = 'https://www.booking.com/searchresults.html?ss=' + encodeURIComponent(s.q) + '&nflt=' + encodeURIComponent('price=INR-min-1500-1');
+      var gm = 'https://www.google.com/maps/search/' + encodeURIComponent(s.maps);
+      return '<article class="sc"><header><h3>' + nm + '</h3><div class="nts">' + nights[id].map(function (n) { return '<span>Night of day ' + n + '</span>'; }).join('') + '</div></header>' +
+        '<div><h4>Best area</h4><p>' + s.area + '</p></div>' +
+        '<div><h4>Leads to check</h4><ul>' + s.leads.map(function (l) { return '<li>' + l + '</li>'; }).join('') + '</ul></div>' +
+        '<div><h4>January tips</h4><ul>' + s.tips.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul></div>' +
+        '<div class="btns"><a class="pri" href="' + bk + '" target="_blank" rel="noopener">Booking.com under &#8377;1,500</a><a href="' + gm + '" target="_blank" rel="noopener">Google Maps</a></div></article>';
+    }).join('');
+  }
   function drawCredits() {
     var o = '';
     Object.keys(PHOTOS).forEach(function (id) {
@@ -828,7 +883,7 @@ window.onerror = function (m, s, l) { document.documentElement.setAttribute('dat
 
   /* ---------- Init ---------- */
   window.addEventListener('resize', function () { map.invalidateSize(); });
-  drawChips(); drawFeature(); drawPlaces(); drawDays(); drawCard(); drawBudget(); drawCredits();
+  drawChips(); drawFeature(); drawPlaces(); drawStays(); drawDays(); drawCard(); drawBudget(); drawCredits();
   overview(); styleRoutes();
   setTimeout(function () { map.invalidateSize(); overview(); styleRoutes(); }, 400);
 })();
