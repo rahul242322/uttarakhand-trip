@@ -64,6 +64,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(38px, 
 .seg { display: inline-flex; padding: 4px; gap: 4px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
 .seg button { font: inherit; font-weight: 600; border: 0; background: transparent; color: var(--muted); padding: 8px 18px; border-radius: 9px; cursor: pointer; }
 .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.plan { font-weight: 600; color: var(--muted); }
 .chk { display: inline-flex; gap: 8px; align-items: center; color: var(--muted); cursor: pointer; font-weight: 500; }
 .chk input { accent-color: var(--accent); width: 18px; height: 18px; }
 
@@ -179,9 +180,9 @@ svg#map .pulse { transform-box: fill-box; transform-origin: center; animation: p
   <svg class="sky" id="sky" viewBox="0 0 1440 460" preserveAspectRatio="xMidYMax slice" aria-hidden="true"></svg>
   <div class="snow" id="snow" aria-hidden="true"></div>
   <div class="inner">
-    <div class="eyebrow">January &middot; Delhi to Delhi</div>
+    <div class="eyebrow">January &middot; Vasai Road and back</div>
     <h1>Uttarakhand in snow season</h1>
-    <p class="lede">Ganga aarti at Haridwar, pine forests above Mussoorie, the lakes of Nainital, the temples of Jageshwar and a jeep safari in Corbett. Pick a day to see that leg on the map.</p>
+    <p class="lede">Bus to Mussoorie, rented bikes in the hills, the Ganga Aarti at Haridwar, Nainital, Kainchi Dham and Jageshwar, then a train home from Haridwar. Pick a day to see that leg on the map.</p>
     <div class="chips" id="chips"></div>
   </div>
   <div class="edge"></div>
@@ -190,10 +191,7 @@ svg#map .pulse { transform-box: fill-box; transform-origin: center; animation: p
 <div class="pad">
   <div class="inner">
     <div class="tools">
-      <div class="seg" role="group" aria-label="Trip length">
-        <button id="p8" aria-pressed="true">8 days</button>
-        <button id="p7" aria-pressed="false">7 days</button>
-      </div>
+      <span class="plan">11-day plan &middot; train, bus, cab and rented bikes</span>
       <label class="chk" for="ex"><input type="checkbox" id="ex"> Show other famous places</label>
     </div>
 
@@ -220,9 +218,9 @@ svg#map .pulse { transform-box: fill-box; transform-origin: center; animation: p
         <h2>January checklist</h2>
         <ul>
           <li>Pack thermals, a down jacket, gloves, a woolen cap and waterproof boots with grip.</li>
-          <li>Drive in daylight only. Sunset is near 5:30 pm and shaded roads get black ice.</li>
-          <li>Allow for fog delays on the Delhi highways and trains.</li>
-          <li>Book Corbett safari permits early and confirm which zones are open.</li>
+          <li>Ride in daylight only. Sunset is near 5:30 pm and shaded bends get black ice.</li>
+          <li>Carry a driving licence and ID for the bike rentals, and confirm rental and deposit rules ahead.</li>
+          <li>Book both trains early and keep a 3-4 hour buffer on Day 10, since fog delays northern trains.</li>
           <li>Ask every hotel about heating and hot water. Confirm Kainchi Dham hours a day ahead.</li>
         </ul>
       </section>
@@ -293,7 +291,6 @@ svg#map .pulse { transform-box: fill-box; transform-origin: center; animation: p
     almora: { n: 'Almora', ll: [29.597, 79.659], lab: ['start', 14, 16], d: 'Himalayan views, Bright End Corner, Bal Mithai and singori sweets.' },
     jageshwar: { n: 'Jageshwar Dham', ll: [29.639, 79.855], lab: ['start', 10, 4], d: 'About 100+ ancient stone temples in a deodar forest, roughly 35 km from Almora. Go early, it is quietest then.' },
     ranikhet: { n: 'Ranikhet', ll: [29.643, 79.432], lab: ['end', -10, 4], d: 'Quiet cantonment town with pine forests. A short stop on the way to Corbett.' },
-    corbett: { n: 'Jim Corbett', ll: [29.397, 79.126], lab: ['end', -14, 16], lab2: ['end', -14, 0], d: 'India\'s oldest national park, near Ramnagar. Jeep safari in the Bijrani or Jhirna zone. Book permits early.' }
   };
   var V = {
     v1: [28.98, 77.70], v2: [29.47, 77.70], v3: [29.85, 77.89],
@@ -301,6 +298,7 @@ svg#map .pulse { transform-box: fill-box; transform-origin: center; animation: p
     morad: [28.84, 78.77], hapur: [28.73, 77.78]
   };
   var EX = {
+    corbett: { n: 'Jim Corbett (optional)', ll: [29.397, 79.126], d: 'India\'s oldest national park, near Ramnagar. Jeep safari in the Bijrani or Jhirna zone. Not in the 11-day route. It fits between Nainital and Haridwar if you drop a day elsewhere.' },
     auli: { n: 'Auli', ll: [30.53, 79.57], d: 'India\'s best-known ski destination with Nanda Devi views. Check road and ropeway status before going.' },
     chopta: { n: 'Chopta', ll: [30.35, 79.09], d: 'Snowy meadow stay and base for Tungnath and Chandrashila.' },
     kedarnath: { n: 'Kedarnath (closed)', ll: [30.735, 79.067], d: 'Jyotirlinga and Char Dham shrine. Closed in winter.' },
@@ -327,40 +325,41 @@ svg#map .pulse { transform-box: fill-box; transform-origin: center; animation: p
   };
   var CAR = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15v-3l2-5h14l2 5v3M3 15h18M7 18v-3M17 18v-3"/></svg>';
 
-  var D_RISH = { t: 'Delhi to Rishikesh', k: 'temple', path: ['delhi','v1','v2','v3','haridwar','rishikesh'], stay: 'rishikesh', drive: '5-6 hrs', b: ['Leave early and reach Haridwar by afternoon.', 'Har Ki Pauri and the evening Ganga Aarti.', 'Continue to Rishikesh for the night.'] };
-  var D_KAINCHI = { t: 'Nainital to Almora via Kainchi Dham', k: 'lake', path: ['nainital','kainchi','almora'], stay: 'almora', drive: '2.5 hrs', b: ['Morning boating on Naini Lake or the Snow View ropeway.', 'Kainchi Dham around midday.', 'Continue to Almora for the night.'] };
-  var D_JAG = { t: 'Jageshwar Dham', k: 'temple', path: ['almora','jageshwar','almora'], stay: 'almora', drive: '2 hrs round trip', b: ['Reach Jageshwar early, about 2 hours at the temples.', 'Return via Katarmal Sun Temple or Bright End Corner.', 'Try Bal Mithai and singori. Binsar is an alternative stay.'] };
-  var D_CORB = { t: 'Almora to Jim Corbett', k: 'tree', path: ['almora','ranikhet','corbett'], stay: 'corbett', drive: '5-6 hrs', b: ['Short stop at Ranikhet.', 'Arrive at Ramnagar in the afternoon and rest.'] };
-  var D_HOME = { t: 'Corbett to Delhi', k: 'road', path: ['corbett','morad','hapur','delhi'], stay: null, drive: '6-7 hrs', b: ['Morning jeep safari in Bijrani or Jhirna.', 'Drive back to Delhi. Expect fog on the highway.'] };
-
-  var PLANS = {
-    '8': { days: [
-      D_RISH,
-      { t: 'Rishikesh to Mussoorie', k: 'peak', path: ['rishikesh','dehradun','mussoorie'], stay: 'mussoorie', drive: '3.5 hrs', b: ['Morning at Ram Jhula, Laxman Jhula and the Beatles Ashram.', 'Drive up after lunch via Dehradun.', 'Evening walk on Mall Road.'] },
-      { t: 'Mussoorie and Dhanaulti', k: 'tree', path: ['mussoorie','dhanaulti','mussoorie'], stay: 'mussoorie', drive: '3 hrs round trip', b: ['Gun Hill, Kempty Falls and Camel\'s Back Road.', 'Day trip to Dhanaulti for pine forest and likely snow.'] },
-      { t: 'Mussoorie to Nainital', k: 'road', path: ['mussoorie','dehradun','haridwar','najib','kashi','hald','nainital'], stay: 'nainital', drive: '8-9 hrs', b: ['Longest drive of the trip. Leave by 6-7 am.', 'Via Dehradun, Haridwar and Haldwani.', 'Short Mall Road walk at dusk. Optionally break the journey with a night in Dehradun.'] },
-      D_KAINCHI, D_JAG, D_CORB, D_HOME
-    ], veh: 48, bud: [['Stays', 14, 23], ['Cab', 'cab'], ['Food', 6, 9], ['Safari and entry fees', 3, 5]] },
-    '7': { days: [
-      D_RISH,
-      { t: 'Rishikesh', k: 'lake', path: ['rishikesh'], stay: 'rishikesh', drive: 'No long drive', b: ['Ram Jhula, Laxman Jhula, Beatles Ashram and Triveni Ghat.', 'Cafes, yoga, and optional rafting. The water is very cold in January.'] },
-      { t: 'Rishikesh to Nainital', k: 'road', path: ['rishikesh','haridwar','najib','kashi','hald','nainital'], stay: 'nainital', drive: '7-8 hrs', b: ['Leave by 7-8 am so you arrive before dark.', 'Evening on Mall Road.'] },
-      D_KAINCHI, D_JAG, D_CORB, D_HOME
-    ], veh: 40, bud: [['Stays', 12, 20], ['Cab', 'cab'], ['Food', 5, 8], ['Safari and entry fees', 3, 5]] }
-  };
+  var PLANS = { '11': { days: [
+    { t: 'Vasai Road to Delhi', r: 'Vasai Road &rarr; Delhi', k: 'road', path: ['delhi'], stay: null, s: 'Night on the train', drive: 'Overnight train', b: ['Board an evening train at Vasai Road and sleep on board (about 16-18 hrs).', 'Book early, because January trains fill up fast.', 'Fog delays are common on the Delhi side, so keep a buffer.'] },
+    { t: 'Rest day in Delhi', r: 'Delhi', k: 'temple', path: ['delhi'], stay: 'delhi', drive: 'Rest day', b: ['Arrive in the morning and rest.', 'Pick up warm layers and gloves if you need them.', 'Book tomorrow\'s bus from Kashmere Gate ISBT.'] },
+    { t: 'Delhi to Mussoorie', k: 'road', path: ['delhi','v1','v2','v3','dehradun','mussoorie'], stay: 'mussoorie', drive: 'Bus, 7-8 hrs', b: ['Take a bus from Kashmere Gate ISBT, leaving early. A Dehradun bus plus a short hop to Mussoorie also works.', 'Reach Mussoorie by evening.', 'Evening walk on Mall Road.'] },
+    { t: 'Mussoorie and Dhanaulti', k: 'peak', path: ['mussoorie','dhanaulti','mussoorie'], stay: 'mussoorie', drive: 'Rented bike', b: ['Rent a bike in Mussoorie for the day. Carry your licence and ID.', 'Kempty Falls, Landour and Gun Hill, then ride to Dhanaulti for forest and likely snow.', 'Return the bike before dark. No night riding.'] },
+    { t: 'Mussoorie to Haridwar via Rishikesh', k: 'lake', path: ['mussoorie','dehradun','rishikesh','haridwar'], stay: 'haridwar', drive: 'Cab, about 4 hrs', b: ['Cab from Mussoorie to Rishikesh (about 3 hrs).', 'Ram Jhula, Laxman Jhula and the Beatles Ashram.', 'Then on to Haridwar for the Ganga Aarti at Har Ki Pauri.'] },
+    { t: 'Haridwar to Nainital', k: 'road', path: ['haridwar','najib','kashi','hald','nainital'], stay: 'nainital', drive: 'Cab or bus, 6-7 hrs', b: ['Leave by 7 am so you arrive before dark.', 'The road goes via Najibabad, Kashipur and Haldwani.', 'Evening on Mall Road and Naini Lake.'] },
+    { t: 'Nainital to Almora via Kainchi Dham', k: 'lake', path: ['nainital','kainchi','almora'], stay: 'almora', drive: 'Rented bike', b: ['Rent a bike in Nainital. You keep it until Day 9.', 'Morning boating on Naini Lake or the Snow View ropeway.', 'Kainchi Dham around midday, then ride on to Almora.'] },
+    { t: 'Jageshwar Dham', k: 'temple', path: ['almora','jageshwar','almora'], stay: 'almora', drive: 'Rented bike', b: ['Reach Jageshwar early, about 2 hours at the temples.', 'Return via Katarmal Sun Temple or Bright End Corner.', 'Try Bal Mithai and singori in Almora.'] },
+    { t: 'Almora to Nainital via Ranikhet', k: 'tree', path: ['almora','ranikhet','nainital'], stay: 'nainital', drive: 'Rented bike', b: ['Ride to Ranikhet for Jhula Devi Temple and Chaubatia Gardens.', 'Continue to Nainital and return the bike.', 'Last evening on the lake.'] },
+    { t: 'Nainital to Haridwar, then train home', r: 'Nainital &rarr; Haridwar', k: 'road', path: ['nainital','hald','kashi','najib','haridwar'], stay: null, s: 'Night on the train', drive: 'Cab or bus, 6-7 hrs', b: ['Leave by 7-8 am for Haridwar.', 'Haridwar trains to Vasai Road include 22918 (about 17:20) and 19020 (about 13:30). Confirm days, times and a Vasai Road stop on IRCTC.', 'Leave a 3-4 hour buffer. Fog delays are common.'] },
+    { t: 'Arrive back in Vasai Road', r: 'Haridwar &rarr; Vasai Road', k: 'road', path: [], stay: null, s: 'Home', drive: 'Train arrives', b: ['Arrive after roughly 22-33 hours on the train, depending on which one you take.'] }
+  ], bud: [
+    ['Stays (8 nights, twin sharing)', 7, 12],
+    ['Train tickets, both ways', 3.5, 6],
+    ['Bus, Delhi to Mussoorie', 0.5, 1],
+    ['Cab and bus legs', 'cab', 8, 12],
+    ['Bike rental and fuel (2 per bike)', 2.5, 3.5],
+    ['Food', 6, 9],
+    ['Entry fees and extras', 1, 2]
+  ] } };
 
   /* Approximate road km per day, keyed by day title (from memory, not live-checked) */
   var KM = {
-    'Delhi to Rishikesh': 245, 'Rishikesh to Mussoorie': 80, 'Mussoorie and Dhanaulti': 55, 'Mussoorie to Nainital': 325,
-    'Nainital to Almora via Kainchi Dham': 58, 'Jageshwar Dham': 70, 'Almora to Jim Corbett': 135, 'Corbett to Delhi': 245,
-    'Rishikesh': 0, 'Rishikesh to Nainital': 255
+    'Delhi to Mussoorie': 285, 'Mussoorie and Dhanaulti': 70, 'Mussoorie to Haridwar via Rishikesh': 100, 'Haridwar to Nainital': 230,
+    'Nainital to Almora via Kainchi Dham': 58, 'Jageshwar Dham': 70, 'Almora to Nainital via Ranikhet': 115, 'Nainital to Haridwar, then train home': 230
   };
   var VISIT = {
-    'Delhi to Rishikesh': ['haridwar', 'rishikesh'], 'Rishikesh to Mussoorie': ['mussoorie'], 'Mussoorie and Dhanaulti': ['mussoorie', 'dhanaulti'],
-    'Mussoorie to Nainital': ['nainital'], 'Nainital to Almora via Kainchi Dham': ['nainital', 'kainchi', 'almora'], 'Jageshwar Dham': ['jageshwar', 'almora'],
-    'Almora to Jim Corbett': ['ranikhet', 'corbett'], 'Corbett to Delhi': ['corbett'], 'Rishikesh': ['rishikesh'], 'Rishikesh to Nainital': ['nainital']
+    'Rest day in Delhi': ['delhi'], 'Delhi to Mussoorie': ['mussoorie'], 'Mussoorie and Dhanaulti': ['mussoorie', 'dhanaulti'],
+    'Mussoorie to Haridwar via Rishikesh': ['rishikesh', 'haridwar'], 'Haridwar to Nainital': ['nainital'],
+    'Nainital to Almora via Kainchi Dham': ['nainital', 'kainchi', 'almora'], 'Jageshwar Dham': ['jageshwar', 'almora'],
+    'Almora to Nainital via Ranikhet': ['ranikhet', 'nainital'], 'Nainital to Haridwar, then train home': ['haridwar']
   };
   var SEE = {
+    delhi: ['India Gate', 'Red Fort', 'Chandni Chowk', 'Humayun\'s Tomb', 'Lotus Temple'],
     haridwar: ['Har Ki Pauri and Ganga Aarti', 'Mansa Devi (ropeway)', 'Chandi Devi', 'Maya Devi Temple', 'Bharat Mata Mandir'],
     rishikesh: ['Laxman Jhula', 'Ram Jhula', 'Triveni Ghat aarti', 'Beatles Ashram', 'Parmarth Niketan', 'Neelkanth Mahadev (about 32 km)'],
     mussoorie: ['Gun Hill', 'Kempty Falls', 'Mall Road', 'Camel\'s Back Road', 'Lal Tibba', 'Company Garden'],
@@ -393,7 +392,7 @@ svg#map .pulse { transform-box: fill-box; transform-origin: center; animation: p
     return '<path d="' + d + '" stroke="#bfe6ff" stroke-width="' + (1.6 * k) + '" stroke-linecap="round" fill="none"/>';
   }
 
-  var state = { plan: '8', day: -1, vb: null, extras: false, place: null, n: 4 };
+  var state = { plan: '11', day: -1, vb: null, extras: false, place: null, n: 4 };
   var svg = document.getElementById('map');
   var card = document.getElementById('card');
   var cap = document.getElementById('cap');
@@ -520,10 +519,10 @@ svg#map .pulse { transform-box: fill-box; transform-origin: center; animation: p
       return '<div class="day" data-open="' + open + '">' +
         '<button data-day="' + i + '" aria-expanded="' + open + '">' +
         '<span class="tile k-' + d.k + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + IC[d.k] + '</svg><b>' + (i + 1) + '</b></span>' +
-        '<span><span class="dt">' + d.t + '</span><span class="dr">' + routeNames(d) + '</span><span class="drive">' + CAR + d.drive + '</span>' + (kmOf(d) ? '<span class="drive km">~' + kmOf(d) + ' km</span>' : '') + '</span></button>' +
+        '<span><span class="dt">' + d.t + '</span><span class="dr">' + (d.r || routeNames(d)) + '</span><span class="drive">' + CAR + d.drive + '</span>' + (kmOf(d) ? '<span class="drive km">~' + kmOf(d) + ' km</span>' : '') + '</span></button>' +
         (open ? '<div class="dbody"><ul>' + d.b.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' +
           (VISIT[d.t] || []).map(function (id) { return seeHtml(id, 'Places to visit in ' + P[id].n); }).join('') +
-          '<div class="stay">' + (d.stay ? 'Overnight in ' + P[d.stay].n : 'Back home') + '</div></div>' : '') +
+          '<div class="stay">' + (d.stay ? 'Overnight in ' + P[d.stay].n : (d.s || 'Back home')) + '</div></div>' : '') +
         '</div>';
     }).join('');
   }
@@ -532,8 +531,8 @@ svg#map .pulse { transform-box: fill-box; transform-origin: center; animation: p
     var id = state.place, plan = PLANS[state.plan].days;
     if (!id) {
       cap.hidden = true;
-      var n = plan.length;
-      card.innerHTML = '<span class="tag">Route overview</span><h3>' + n + ' days, ' + (n - 1) + ' nights</h3><p>Numbered orange dots are overnight stops, labelled with the day you arrive. Tap any stop for details.</p>';
+      var n = plan.length, hn = plan.filter(function (d) { return d.stay; }).length;
+      card.innerHTML = '<span class="tag">Route overview</span><h3>' + n + ' days, ' + hn + ' hotel nights</h3><p>Numbered orange dots are overnight stops, labelled with the day you arrive. Tap any stop for details.</p>';
       return;
     }
     var c = P[id] || EX[id], nights = [];
@@ -549,22 +548,23 @@ svg#map .pulse { transform-box: fill-box; transform-origin: center; animation: p
     var plan = PLANS[state.plan].days, towns = {};
     plan.forEach(function (d) { if (d.stay) towns[d.stay] = 1; });
     var km = plan.reduce(function (a, d) { return a + kmOf(d); }, 0);
-    var items = [plan.length + ' days', (plan.length - 1) + ' nights', '~' + fmt(Math.round(km / 50) * 50) + ' km by road', Object.keys(towns).length + ' overnight towns', 'January'];
+    var items = [plan.length + ' days', plan.filter(function (d) { return d.stay; }).length + ' hotel nights', '~' + fmt(Math.round(km / 50) * 50) + ' km on road', Object.keys(towns).length + ' overnight towns', 'January'];
     document.getElementById('chips').innerHTML = items.map(function (t) { return '<span class="chip">' + t + '</span>'; }).join('');
   }
 
   function drawBudget() {
-    var pl = PLANS[state.plan], lo = 0, hi = 0, max = 25, n = state.n, cab = Math.round(pl.veh / n);
+    var pl = PLANS[state.plan], lo = 0, hi = 0, max = 14, n = state.n;
+    function r1(x) { return Math.round(x * 10) / 10; }
     document.getElementById('bars').innerHTML = pl.bud.map(function (r) {
-      var isCab = r[1] === 'cab', a = isCab ? cab : r[1], b = isCab ? cab : r[2];
+      var isCab = r[1] === 'cab', a = isCab ? r1(r[2] / n) : r[1], b = isCab ? r1(r[3] / n) : r[2];
       lo += a; hi += b;
       var txt = a === b ? '&#8377;' + a + 'k' : '&#8377;' + a + '-' + b + 'k';
-      var name = isCab ? 'Cab (' + n + ' people sharing)' : r[0];
+      var name = isCab ? r[0] + ' (split ' + n + ' ways)' : r[0];
       return '<div class="bar"><div class="top"><span>' + name + '</span><b>' + txt + '</b></div>' +
         '<div class="track"><div class="fill" style="left:' + (a / max * 100) + '%;width:' + Math.max((b - a) / max * 100, 2.5) + '%"></div></div></div>';
     }).join('');
-    document.getElementById('total').innerHTML = '&#8377;' + lo + '-' + hi + 'k';
-    document.getElementById('totnote').textContent = 'Per person, mid-range, group of ' + n + '. Estimates in thousand rupees, not checked against current prices.';
+    document.getElementById('total').innerHTML = '&#8377;' + Math.round(lo) + '-' + Math.round(hi) + 'k';
+    document.getElementById('totnote').textContent = 'Per person, mid-range, group of ' + n + '. Assumes twin-sharing rooms and 2 riders per bike. Rough estimates in thousand rupees, not checked against current prices.';
     document.getElementById('grp').innerHTML = [2, 3, 4, 5, 6].map(function (g) {
       return '<button data-n="' + g + '" aria-pressed="' + (g === n) + '">' + g + '</button>';
     }).join('');
@@ -575,7 +575,8 @@ svg#map .pulse { transform-box: fill-box; transform-origin: center; animation: p
   function selectDay(i) {
     state.day = (state.day === i) ? -1 : i;
     state.place = null;
-    if (state.day < 0) overview(); else fit(PLANS[state.plan].days[state.day].path, 1.5, 150);
+    var dp = state.day >= 0 ? PLANS[state.plan].days[state.day].path : [];
+    if (dp.length) fit(dp, 1.5, 150); else overview();
     render();
     if (window.innerWidth < 960 && state.day >= 0) {
       var el = document.querySelectorAll('#days .day')[state.day];
@@ -587,14 +588,6 @@ svg#map .pulse { transform-box: fill-box; transform-origin: center; animation: p
     var b = e.target.closest('button[data-day]');
     if (b) selectDay(+b.getAttribute('data-day'));
   });
-  function setPlan(p) {
-    state.plan = p; state.day = -1; state.place = null; overview();
-    document.getElementById('p8').setAttribute('aria-pressed', p === '8');
-    document.getElementById('p7').setAttribute('aria-pressed', p === '7');
-    render();
-  }
-  document.getElementById('p8').onclick = function () { setPlan('8'); };
-  document.getElementById('p7').onclick = function () { setPlan('7'); };
   document.getElementById('ex').onchange = function (e) { state.extras = e.target.checked; if (!state.extras && state.place && !P[state.place]) state.place = null; drawMap(); drawCard(); };
 
   function zoom(f) {
