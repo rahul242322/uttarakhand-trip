@@ -384,8 +384,10 @@ window.onerror = function (m, s, l) { document.documentElement.setAttribute('dat
   (function () {
     var HERO = [
       { f: 'images/hero-ranikhet.jpg', n: 'Ranikhet', pos: 'center 55%' }, { f: 'images/hero-nainital.jpg', n: 'Nainital', pos: 'center 62%' },
-      { f: 'images/hero-dhanaulti.jpg', n: 'Dhanaulti', pos: 'center 60%' }, { f: 'images/hero-jageshwar.jpg', n: 'Jageshwar', pos: 'center 40%' },
-      { f: 'images/hero-haridwar.jpg', n: 'Haridwar', pos: 'center 50%' }
+      { f: 'images/hero-kainchi.jpg', n: 'Kainchi Dham', pos: 'center 55%' }, { f: 'images/hero-dhanaulti.jpg', n: 'Dhanaulti', pos: 'center 60%' },
+      { f: 'images/hero-jageshwar.jpg', n: 'Jageshwar', pos: 'center 40%' }, { f: 'images/hero-haridwar.jpg', n: 'Haridwar', pos: 'center 50%' },
+      { f: 'images/hero-rishikesh.jpg', n: 'Rishikesh', pos: 'center 55%' }, { f: 'images/hero-nainital-night.jpg', n: 'Nainital at night', pos: 'center 60%' },
+      { f: 'images/hero-mussoorie.jpg', n: 'Mussoorie', pos: 'center 55%' }
     ];
     var bg = document.getElementById('hbg'), dots = document.getElementById('hdots'), nm = document.getElementById('hname'), cur = 0, loaded = {};
     bg.innerHTML = HERO.map(function (h, i) { return '<div class="hs" data-i="' + i + '" style="background-position:' + h.pos + (i === 0 ? ';background-image:url(' + h.f + ')' : '') + '"></div>'; }).join('');
@@ -521,7 +523,8 @@ window.onerror = function (m, s, l) { document.documentElement.setAttribute('dat
       if (el._init) return;
       el._init = true; el._pause = 0;
       var trk = el.querySelector('.trk'), dots = el.querySelectorAll('.dots i'), idx = 0, n = dots.length;
-      function go(i, smooth) { idx = (i + n) % n; trk.scrollTo({ left: idx * trk.clientWidth, behavior: smooth === false ? 'auto' : 'smooth' }); }
+      var calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      function go(i) { idx = (i + n) % n; trk.scrollTo({ left: idx * trk.clientWidth, behavior: calm ? 'auto' : 'smooth' }); }
       el._go = function (d) { go(idx + d); };
       var raf = null;
       trk.addEventListener('scroll', function () {
@@ -533,16 +536,16 @@ window.onerror = function (m, s, l) { document.documentElement.setAttribute('dat
         });
       }, { passive: true });
       var p = el.querySelector('.prev'), nx = el.querySelector('.next');
-      if (p) p.addEventListener('click', function () { el._pause = Date.now() + 9000; el._go(-1); });
-      if (nx) nx.addEventListener('click', function () { el._pause = Date.now() + 9000; el._go(1); });
-      ['pointerdown', 'mouseenter', 'focusin'].forEach(function (ev) { el.addEventListener(ev, function () { el._pause = Date.now() + 9000; }); });
+      if (p) p.addEventListener('click', function () { el._pause = Date.now() + 6000; el._go(-1); });
+      if (nx) nx.addEventListener('click', function () { el._pause = Date.now() + 6000; el._go(1); });
+      ['pointerdown', 'focusin'].forEach(function (ev) { el.addEventListener(ev, function () { el._pause = Date.now() + 6000; }); });
       if (n > 1) cars.push(el);
       if (window.IntersectionObserver) {
         new IntersectionObserver(function (e) { el._vis = e[0].isIntersecting; }, { threshold: 0.4 }).observe(el);
       } else el._vis = true;
     });
   }
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  {
     setInterval(function () {
       cars = cars.filter(function (c) { return document.body.contains(c); });
       cars.forEach(function (c) { if (c._vis && Date.now() > c._pause && !document.hidden) c._go(1); });
