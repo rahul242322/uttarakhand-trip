@@ -163,6 +163,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(38px, 
 .drive { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; font-weight: 600; color: var(--muted); background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; font-variant-numeric: tabular-nums; }
 .drive.km { margin-left: 6px; color: var(--warm); background: var(--warm-soft); border-color: transparent; }
 .dbody { padding: 0 16px 16px 16px; display: grid; gap: 12px; }
+.dbody .car figure { aspect-ratio: 2 / 1; }
 .dbody ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
 .dbody li { position: relative; padding-left: 24px; }
 .dbody li::before { content: ""; position: absolute; left: 2px; top: 6px; width: 12px; height: 7px; border-left: 2px solid var(--k-tree); border-bottom: 2px solid var(--k-tree); transform: rotate(-45deg); }
@@ -318,7 +319,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(38px, 
       <div class="pgrid" id="pgrid"></div>
     </section>
 
-    <div class="sec" id="plan" style="margin-top:32px"><span class="ev ey">Itinerary</span><h2>Day by day</h2></div>
+    <div class="sec" id="plan" style="margin-top:32px"><span class="ev ey">Itinerary</span><h2>Day by day</h2><p>Every day is open below. Tap a day's title to show that leg on the map.</p></div>
     <div class="tools">
       <span class="plan">11-day plan &middot; train, bus, cab and rented bikes</span>
       <label class="chk" for="ex"><input type="checkbox" id="ex"> Show other famous places</label>
@@ -661,19 +662,25 @@ window.onerror = function (m, s, l) { document.documentElement.setAttribute('dat
   }
   function drawDays() {
     document.getElementById('days').innerHTML = DAYS.map(function (d, i) {
-      var open = i === state.day, km = kmOf(i);
-      var gal = open && d.visit ? carHtml(photosFor(d.visit, 2), '') : '';
-      return '<div class="day" data-open="' + open + '">' +
-        '<button data-day="' + i + '" aria-expanded="' + open + '">' +
+      var sel = i === state.day, km = kmOf(i);
+      var gal = d.visit ? carHtml(photosFor(d.visit, 2), '') : '';
+      return '<div class="day" data-open="' + sel + '">' +
+        '<button data-day="' + i + '" aria-pressed="' + sel + '" title="Show this day on the map">' +
         (COVER[i] && PHOTOS[COVER[i][0]] ? '<span class="tile ph"><img src="' + PHOTOS[COVER[i][0]][COVER[i][1]].f + '" alt="" loading="lazy"><b>' + (i + 1) + '</b></span>'
           : '<span class="tile k-' + d.k + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + IC[d.k] + '</svg><b>' + (i + 1) + '</b></span>') +
         '<span><span class="dt">' + d.t + '</span><span class="dr">' + d.r + '</span><span class="drive">' + CAR + d.drive + '</span>' + (km ? '<span class="drive km">' + km + ' km</span>' : '') + (d.stay && STAYS[d.stay] ? '<span class="drive sleep">Sleep: ' + STAYS[d.stay].pick + '</span>' : '') + '</span></button>' +
-        (open ? '<div class="dbody">' + gal + '<ul>' + d.b.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' +
+        ('<div class="dbody">' + gal + '<ul>' + d.b.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' +
           (d.visit || []).map(function (id) { return seeHtml(id, 'Places to visit in ' + P[id].n); }).join('') +
-          '<div class="stay-note">' + (d.stay ? 'Overnight in ' + P[d.stay].n + (STAYS[d.stay] ? ': ' + STAYS[d.stay].pick + ' (tentative, not booked)' : '') : (d.s || 'Back home')) + '</div></div>' : '') +
+          '<div class="stay-note">' + (d.stay ? 'Overnight in ' + P[d.stay].n + (STAYS[d.stay] ? ': ' + STAYS[d.stay].pick + ' (tentative, not booked)' : '') : (d.s || 'Back home')) + '</div></div>') +
         '</div>';
     }).join('');
     initCars(document.getElementById('days'));
+  }
+  function markSelected() {
+    document.querySelectorAll('#days .day').forEach(function (el, i) {
+      el.setAttribute('data-open', i === state.day ? 'true' : 'false');
+      var b = el.querySelector('button'); if (b) b.setAttribute('aria-pressed', i === state.day ? 'true' : 'false');
+    });
   }
   function drawCard() {
     var id = state.place;
@@ -792,7 +799,7 @@ window.onerror = function (m, s, l) { document.documentElement.setAttribute('dat
     state.day = state.day === i ? -1 : i;
     state.place = null;
     if (state.day < 0) overview(); else focusDay(state.day);
-    drawDays(); drawCard(); styleRoutes(); refreshLive();
+    markSelected(); drawCard(); styleRoutes(); refreshLive();
     if (window.innerWidth < 960 && state.day >= 0) {
       var el = document.querySelectorAll('#days .day')[state.day];
       if (el) el.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
@@ -825,7 +832,7 @@ window.onerror = function (m, s, l) { document.documentElement.setAttribute('dat
   };
   ctl.addTo(map);
   var locBtn = document.getElementById('locate');
-  document.getElementById('all').onclick = function () { state.day = -1; state.place = null; overview(); drawDays(); drawCard(); styleRoutes(); refreshLive(); };
+  document.getElementById('all').onclick = function () { state.day = -1; state.place = null; overview(); markSelected(); drawCard(); styleRoutes(); refreshLive(); };
 
   function km(a, b) {
     var R = 6371, dLat = (b[0] - a[0]) * Math.PI / 180, dLon = (b[1] - a[1]) * Math.PI / 180;
@@ -938,7 +945,15 @@ window.onerror = function (m, s, l) { document.documentElement.setAttribute('dat
   if (fk) setTimeout(function () { locBtn.classList.add('on'); state.follow = true; onFix({ coords: { latitude: +fk[1], longitude: +fk[2], accuracy: 25, speed: 6, altitude: 1650, heading: 40 } }); }, 600);
 
   /* ---------- Init ---------- */
-  window.addEventListener('resize', function () { map.invalidateSize(); });
+  var touched = false;
+  ['pointerdown', 'wheel', 'touchstart'].forEach(function (ev) { map.getContainer().addEventListener(ev, function () { touched = true; }, { passive: true }); });
+  function refit() {
+    map.invalidateSize();
+    if (touched || state.me) return;
+    if (state.day >= 0) focusDay(state.day); else overview();
+  }
+  window.addEventListener('resize', refit);
+  if (window.ResizeObserver) new ResizeObserver(function () { if (map.getSize().x > 50) refit(); }).observe(document.getElementById('map'));
   drawChips(); drawFeature(); drawPlaces(); drawStays(); drawDays(); drawCard(); drawBudget(); drawCredits();
   overview(); styleRoutes();
   setTimeout(function () { map.invalidateSize(); overview(); styleRoutes(); }, 400);
